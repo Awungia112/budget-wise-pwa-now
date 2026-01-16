@@ -1,26 +1,17 @@
-workflows:
-  ios-pwa-simulator:
-    name: PWA iOS Simulator Build
-    instance_type: mac_mini_m2
-    max_build_duration: 60
-    environment:
-      xcode: latest
-      cocoapods: default
-      vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
-    scripts:
+scripts:
       - name: Install dependencies and Build Web
         script: |
           npm install
           npm run build
       - name: Initialize Native iOS Project
         script: |
-          # Create the iOS native shell
+          # Clean up any existing ios folder to prevent conflicts
+          rm -rf ios
           npx cap add ios
           npx cap sync ios
       - name: CocoaPods installation
         script: |
+          # The Podfile is located in ios/App/
           cd ios/App && pod install
       - name: Build for Simulator (No Signing)
         script: |
@@ -35,7 +26,7 @@ workflows:
             CODE_SIGN_IDENTITY=""
       - name: Package for Appetize
         script: |
-          # Locate the .app folder and zip it
+          # Zip the generated .app for cloud testing
           APP_PATH=$(find build/Build/Products/Debug-iphonesimulator -name "*.app" | head -n 1)
           if [ -z "$APP_PATH" ]; then echo "App not found"; exit 1; fi
           cd $(dirname "$APP_PATH")
