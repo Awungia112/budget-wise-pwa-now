@@ -1,24 +1,4 @@
-workflows:
-  ios-simulator-workflow:
-    name: iOS Simulator Build (No Account)
-    max_build_duration: 60
-    instance_type: mac_mini_m2
-    environment:
-      xcode: latest
-      cocoapods: default
-      vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
-    scripts:
-      - name: Install dependencies
-        script: npm install
-      - name: Build web assets
-        script: npm run build
-      - name: Sync Capacitor
-        script: npx cap sync ios
-      - name: CocoaPods installation
-        script: cd ios/App && pod install
-      - name: Build for Simulator
+- name: Build for Simulator (No Signing)
         script: |
           xcodebuild build \
             -workspace "$XCODE_WORKSPACE" \
@@ -29,9 +9,11 @@ workflows:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY=""
-      - name: Package for Testing
+      - name: Package for Appetize
         script: |
+          # This finds the actual app folder and zips it up
           APP_PATH=$(find build_output/Build/Products/Debug-iphonesimulator -name "*.app" | head -n 1)
+          if [ -z "$APP_PATH" ]; then echo "App folder not found"; exit 1; fi
           cd $(dirname "$APP_PATH")
           zip -r simulator-build.zip $(basename "$APP_PATH")
           mv simulator-build.zip $CM_BUILD_DIR/
