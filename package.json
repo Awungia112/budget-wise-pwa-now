@@ -64,9 +64,12 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.3",
     "zod": "^3.23.8"
+    "@capacitor/core": "latest",
+    "@capacitor/ios": "latest"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "@capacitor/cli": "latest"
     "@tailwindcss/typography": "^0.5.15",
     "@types/node": "^22.5.5",
     "@types/react": "^18.3.3",
