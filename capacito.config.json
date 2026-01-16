@@ -1,0 +1,6 @@
+{
+  "appId": "com.yourname.budgetwise",
+  "appName": "BudgetWise",
+  "webDir": "dist", 
+  "bundledWebRuntime": false
+}
