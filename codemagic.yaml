@@ -7,14 +7,23 @@ workflows:
       xcode: latest
       cocoapods: default
       vars:
-        XCODE_WORKSPACE: "CodemagicSample.xcworkspace"
-        XCODE_SCHEME: "CodemagicSample"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
     scripts:
       - name: Install dependencies
-        script: pod install
+        script: |
+          npm install
+          npm run build # Ensure this creates your 'dist' or 'www' folder
+      - name: Initialize Native iOS Project
+        script: |
+          # This creates the ios folder on the build machine
+          npx cap add ios
+          npx cap sync ios
+      - name: CocoaPods installation
+        script: |
+          cd ios/App && pod install
       - name: Build for Simulator (No Signing)
         script: |
-          # The key flags below (ALLOWED=NO) bypass the need for an Apple Account
           xcodebuild build \
             -workspace "$XCODE_WORKSPACE" \
             -scheme "$XCODE_SCHEME" \
@@ -24,5 +33,4 @@ workflows:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY=""
     artifacts:
-      # This produces a .app file which you can run on a Mac Simulator
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
