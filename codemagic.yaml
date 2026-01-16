@@ -1,22 +1,10 @@
-workflows:
-  ios-pwa-simulator:
-    name: PWA iOS Simulator Build
-    instance_type: mac_mini_m2
-    max_build_duration: 60
-    environment:
-      xcode: latest
-      cocoapods: default
-      vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
-    scripts:
-      - name: Install dependencies
+scripts:
+      - name: Install dependencies and Build Web
         script: |
           npm install
-          npm run build # Ensure this creates your 'dist' or 'www' folder
+          npm run build
       - name: Initialize Native iOS Project
         script: |
-          # This creates the ios folder on the build machine
           npx cap add ios
           npx cap sync ios
       - name: CocoaPods installation
@@ -29,8 +17,16 @@ workflows:
             -scheme "$XCODE_SCHEME" \
             -sdk iphonesimulator \
             -configuration Debug \
+            -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY=""
+      - name: Package for Appetize
+        script: |
+          # Finds the .app folder and zips it for easy cloud testing
+          APP_PATH=$(find build/Build/Products/Debug-iphonesimulator -name "*.app" | head -n 1)
+          cd $(dirname "$APP_PATH")
+          zip -r simulator-build.zip $(basename "$APP_PATH")
+          mv simulator-build.zip $CM_BUILD_DIR/
     artifacts:
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - simulator-build.zip
